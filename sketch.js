@@ -46,6 +46,21 @@ const typeCategoryMap = {
   "unknown": "Unknown Type"
 };
 
+const referenceCities = [
+  { name: "Rome", lat: 41.9, lon: 12.5 },
+  { name: "Paris", lat: 48.8566, lon: 2.3522 },
+  { name: "New York", lat: 40.7128, lon: -74.0060 },
+  { name: "San Francisco", lat: 37.7749, lon: -122.4194 },
+  { name: "Tokyo", lat: 35.7, lon: 139.7 },
+  { name: "Mexico City", lat: 19.4, lon: -99.1 },
+  { name: "Honolulu", lat: 21.3, lon: -157.8 },
+  { name: "Jakarta", lat: -6.2, lon: 106.8 },
+  { name: "Cape Town", lat: -33.9, lon: 18.4 },
+  { name: "Sydney", lat: -33.8688, lon: 151.2093 },
+  { name: "Buenos Aires", lat: -34.6037, lon: -58.3816 }
+];
+
+
 // === PRELOAD ===
 function preload() {
   volcanoData = loadTable("asset/dataset.csv", "csv", "header");
@@ -82,6 +97,7 @@ function draw() {
 
   drawTitle();
   drawLegendBox();
+  
 
   let mapMargin = 50;
   let mapX = mapMargin;
@@ -89,7 +105,11 @@ function draw() {
   let mapW = width - 2 * mapMargin;
   let mapH = height - mapY - mapMargin;
 
+  drawLatLonGrid(mapX, mapY, mapW, mapH);
+
   drawVolcanoes(mapX, mapY, mapW, mapH);
+
+  drawReferenceCities(mapX, mapY, mapW, mapH);
 }
 
 // === TITLE ===
@@ -341,9 +361,12 @@ function createTypeBar() {
   typeButtons = [];
 
   for (let cat of categoriesWithAll) {
-    let btn = createDiv(cat);
+    // Contenitore pulsante
+    let btn = createDiv();
     btn.parent(typeBarDiv);
-    btn.style('display', 'inline-block');
+    btn.style('display', 'inline-flex');
+    btn.style('align-items', 'center');
+    btn.style('gap', '6px');
     btn.style('padding', '6px 14px');
     btn.style('margin-right', '8px');
     btn.style('cursor', 'pointer');
@@ -353,7 +376,14 @@ function createTypeBar() {
     btn.style('border-radius', '6px');
     btn.style('transition', '0.2s');
     btn.style('background-color', 'transparent');
+    btn.html(""); // inizialmente vuoto
+  
 
+    // === Testo categoria ===
+    let txt = createSpan(cat);
+    txt.parent(btn);
+
+    // === Interazioni ===
     btn.mouseOver(() => btn.style('background-color', '#1a3b7c'));
     btn.mouseOut(() => updateTypeBarHighlight());
     btn.mousePressed(() => {
@@ -366,6 +396,7 @@ function createTypeBar() {
 
   updateTypeBarHighlight();
 }
+
 
 function updateTypeBarHighlight() {
   for (let obj of typeButtons) {
@@ -395,3 +426,50 @@ function windowResized() {
 
 // === LEGEND BOX ===
 function drawLegendBox() {}
+
+function drawLatLonGrid(mapX, mapY, mapW, mapH) {
+  stroke(255, 255, 255, 40);
+  strokeWeight(1);
+  textSize(10);
+  fill(255, 200);
+
+  // Latitudine ogni 30°
+  for (let lat = -60; lat <= 90; lat += 30) {
+    let y = map(lat, 90, -90, mapY, mapY + mapH);
+    line(mapX, y, mapX + mapW, y);
+    noStroke();
+    text(`${lat}°`, mapX + 5, y - 10);
+    stroke(255, 255, 255, 40);
+  }
+
+  // Longitudine ogni 60°
+  for (let lon = -180; lon <= 180; lon += 60) {
+    let x = map(lon, -180, 180, mapX, mapX + mapW);
+    line(x, mapY, x, mapY + mapH);
+    noStroke();
+    textAlign(CENTER, TOP);
+    text(`${lon}°`, x, mapY + mapH + 5);
+    stroke(255, 255, 255, 40);
+  }
+}
+
+function drawReferenceCities(mapX, mapY, mapW, mapH) {
+  textFont(fontSans);
+  textSize(18);
+  fill(255);
+  noStroke();
+
+  for (let c of referenceCities) {
+    let x = map(c.lon, -180, 180, mapX, mapX + mapW);
+    let y = map(c.lat, 90, -90, mapY, mapY + mapH);
+    fill(255);
+    noStroke();
+    ellipse(x, y, 6, 6);
+    fill(255);
+    textAlign(LEFT, CENTER);
+    text(c.name, x + 8, y);
+  }
+}
+
+
+
